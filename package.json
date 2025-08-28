@@ -1,0 +1,15 @@
+{
+  "name": "crm-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+  "dev": "concurrently \"npm:dev:api\" \"npm:dev:ui\"",
+  "dev:api": "npm run dev --prefix api",
+  "dev:ui": "npm run dev --prefix app-ui",
+  "build": "npm run build --prefix api && npm run build --prefix app-ui"
+}
+,
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
