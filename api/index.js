@@ -1,4 +1,10 @@
-// E:\CRM\CRM\api\index.js  — ESM, минимальная версия
+// --- системные импорты для путей (нужны для раздачи статики)
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// --- API
 import express from 'express';
 
 const app = express();
@@ -33,7 +39,7 @@ app.post('/api/clients', (req, res) => {
   clients.push({ id, name, phone: phone ?? null });
   res.status(201).json({ ok: true, data: { id } });
 });
-// UPDATE /api/clients/:id
+
 app.put('/api/clients/:id', (req, res) => {
   const id = Number(req.params.id);
   const idx = clients.findIndex(c => c.id === id);
@@ -43,7 +49,6 @@ app.put('/api/clients/:id', (req, res) => {
   res.json({ ok: true, data: clients[idx] });
 });
 
-// DELETE /api/clients/:id
 app.delete('/api/clients/:id', (req, res) => {
   const id = Number(req.params.id);
   const idx = clients.findIndex(c => c.id === id);
@@ -52,8 +57,23 @@ app.delete('/api/clients/:id', (req, res) => {
   res.json({ ok: true });
 });
 
-// ===== Start =====
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log('API listening on http://localhost:' + PORT);
+// ===== Раздача собранного UI (Vite build) =====
+const distDir = path.join(__dirname, '..', 'app-ui', 'dist');
+
+// статика фронта
+app.use(express.static(distDir));
+
+// все не-API маршруты — в SPA
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ ok: false, error: 'not_found' });
+  }
+  res.sendFile(path.join(distDir, 'index.html'));
 });
+
+// ===== Start =====
+const PORT = process.env.PORT || 3001; // на Replit приходит свой PORT
+app.listen(PORT, () => {
+  console.log('Server listening on http://localhost:' + PORT);
+});
+
